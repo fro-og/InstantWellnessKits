@@ -114,6 +114,29 @@
 ---
 ## Technical details
 
+### Database Setup & Data Persistence
+
+The project uses Docker with MySQL 8.0 for database management. All data is persisted using Docker volumes:
+
+- **Database Container**: `wellness-mysql` running on port 3306
+- **Volume**: `instantwellnesskits_mysql_data` - persists data even after container removal
+- **Current Data**: 11,222 orders with 30,077 tax breakdown records
+- **Initial Setup**: Tables are created via migration script (`npm run db:migrate`)
+
+### Data Flow
+1. User creates order via web interface or CSV import
+2. Backend calculates tax based on coordinates using point-in-polygon lookup
+3. Order and tax breakdown saved to MySQL with transaction safety
+4. Data persists in Docker volume
+5. Frontend displays orders with tax breakdown and filtering
+
+### Tax Calculation Logic
+The system determines tax rates by:
+- Taking GPS coordinates (latitude, longitude)
+- Finding which county/city contains that point using GeoJSON boundary data
+- Looking up pre-configured tax rates for that jurisdiction
+- Calculating composite rate = state_rate (4%) + county_rate (0-4%) + city_rate (0-4.5%)
+
 ### Features
 
 - CSV Import: Upload order data with coordinates for bulk processing
@@ -147,96 +170,60 @@
 - **Docker** (for MySQL container)
 - **Git**
 
-### Usage
+### Setup
 
 1. Clone the repository
 ```bash
 git clone https://github.com/yourusername/InstantWellnessKits.git
 cd InstantWellnessKits
+./setup.sh
 ```
 
-2. Install dependencies
-
+2. Start the app
 ```bash
-npm install
-```
-
-3. Set up environment variables
-
-Create .env file in the root directory:
-```env
-# Database
-DB_HOST=localhost
-DB_PORT=3306
-DB_USER=wellness_user
-DB_PASSWORD=wellness_pass
-DB_NAME=wellness_kits
-
-# Backend
-PORT=5000
-CORS_ORIGIN=http://localhost:3000
-
-# Google OAuth (optional - for testing)
-REACT_APP_GOOGLE_CLIENT_ID=your_client_id
-```
-
-4. Start MySQL with Docker
-
-```bash
-# Run MySQL container
-docker run --name wellness-mysql \
-  -e MYSQL_ROOT_PASSWORD=rootpass \
-  -e MYSQL_DATABASE=wellness_kits \
-  -e MYSQL_USER=wellness_user \
-  -e MYSQL_PASSWORD=wellness_pass \
-  -p 3306:3306 \
-  -d mysql:8.0
-
-# Wait 10 seconds for MySQL to initialize
-sleep 10
-```
-
-5. Seed the database with test data
-
-```bash
-# Run the seed script (creates tables + imports test orders)
-cd backend
-npm run db:seed
-```
-
-6. Start the backend server
-
-```bash
-# In the backend directory
 npm run dev
-# Server runs on http://localhost:5000
 ```
 
-7. Start the frontend application
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:5000/api
+- Database: localhost:3306 (user: wellness_user, password: wellness_pass)
+
+### Database management
 
 ```bash
-# In a new terminal, from the project root
-cd frontend
-npm start
-# App runs on http://localhost:3000
+# create tables
+npm run db:migrate
+
+# load test data
+npm run db:seed
+
+# backup database
+docker exec wellness-mysql mysqldump -u wellness_user -pwellness_pass wellness_kits > backup.sql
+
+# restore database
+cat backup.sql | docker exec -i wellness-mysql mysql -u wellness_user -pwellness_pass wellness_kits
 ```
 
-8. Import test orders (optional)
-
-The database already has test orders, but you can import more:
-
+### Stop application
 ```bash
-curl -X POST http://localhost:5000/api/orders/import \
-  -F "file=@BetterMe Test-Input.csv"
+pkill -f "ts-node|react-scripts"
+docker stop wellness-mysql
 ```
 
+### Extra info (for debugging)
 ```bash
+# start docker
+docker start wellness-mysql
+docker stop wellness-mysql
+
 # start backend
 npm run backend:dev
 
 # start frontend
-npm start
+PORT=3000 npm start
 
 # db setup
 npm run db:seed
+npm run db:migrate
 ```
