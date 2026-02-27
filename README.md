@@ -112,5 +112,131 @@
 Нью-Йорк — багатомовне місто. Підтримка іспанської та китайської мов на старті відкриє значний додатковий сегмент ринку з мінімальними витратами.
 
 ---
+## Technical details
 
-*Working Document — BetterMe Research & Business Analysis*
+### Features
+
+- CSV Import: Upload order data with coordinates for bulk processing
+- Manual Order Creation: Create single orders with instant tax calculation
+- Order Dashboard: View all orders with pagination, filtering, and tax breakdown
+- Smart Tax Calculation: Automatic composite tax rate based on location (state + county + city)
+- Google OAuth: Secure admin access (optional)
+
+### Tech Stack
+
+#### Backend
+- Node.js + Express - REST API server
+- TypeScript - Type safety
+- MySQL 8.0 - Relational database
+- Docker - Containerized database
+- mysql2 - MySQL driver with promises
+- csv-parse - CSV parsing
+- Helmet + CORS + Rate Limiting - Security
+
+#### Frontend
+- React 18 - UI library
+- TypeScript - Type safety
+- React Query - Data fetching & caching
+- React Router v6 - Navigation
+- Tailwind CSS - Styling
+- Google OAuth - Authentication
+
+### Prerequisites
+- **Node.js** (v18 or higher)
+- **npm** (v9 or higher)
+- **Docker** (for MySQL container)
+- **Git**
+
+### Usage
+
+1. Clone the repository
+```bash
+git clone https://github.com/yourusername/InstantWellnessKits.git
+cd InstantWellnessKits
+```
+
+2. Install dependencies
+
+```bash
+npm install
+```
+
+3. Set up environment variables
+
+Create .env file in the root directory:
+```env
+# Database
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=wellness_user
+DB_PASSWORD=wellness_pass
+DB_NAME=wellness_kits
+
+# Backend
+PORT=5000
+CORS_ORIGIN=http://localhost:3000
+
+# Google OAuth (optional - for testing)
+REACT_APP_GOOGLE_CLIENT_ID=your_client_id
+```
+
+4. Start MySQL with Docker
+
+```bash
+# Run MySQL container
+docker run --name wellness-mysql \
+  -e MYSQL_ROOT_PASSWORD=rootpass \
+  -e MYSQL_DATABASE=wellness_kits \
+  -e MYSQL_USER=wellness_user \
+  -e MYSQL_PASSWORD=wellness_pass \
+  -p 3306:3306 \
+  -d mysql:8.0
+
+# Wait 10 seconds for MySQL to initialize
+sleep 10
+```
+
+5. Seed the database with test data
+
+```bash
+# Run the seed script (creates tables + imports test orders)
+cd backend
+npm run db:seed
+```
+
+6. Start the backend server
+
+```bash
+# In the backend directory
+npm run dev
+# Server runs on http://localhost:5000
+```
+
+7. Start the frontend application
+
+```bash
+# In a new terminal, from the project root
+cd frontend
+npm start
+# App runs on http://localhost:3000
+```
+
+8. Import test orders (optional)
+
+The database already has test orders, but you can import more:
+
+```bash
+curl -X POST http://localhost:5000/api/orders/import \
+  -F "file=@BetterMe Test-Input.csv"
+```
+
+```bash
+# start backend
+npm run backend:dev
+
+# start frontend
+npm start
+
+# db setup
+npm run db:seed
+```
