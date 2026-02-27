@@ -9,26 +9,21 @@ import ordersRoutes from './routes/orders.routes';
 import { testConnection } from './config/database';
 import { RowDataPacket } from 'mysql2';
 
-// Load environment variables
 dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Security middleware
 app.use(helmet());
 
-// CORS configuration
 app.use(cors({
   origin: process.env.CORS_ORIGIN || 'http://localhost:3000',
   credentials: true
 }));
 
-// Body parsing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // limit each IP to 100 requests per windowMs
@@ -36,10 +31,8 @@ const limiter = rateLimit({
 });
 app.use('/api/', limiter);
 
-// Routes
 app.use('/api/orders', ordersRoutes);
 
-// Health check
 app.get('/health', async (req, res) => {
   const dbConnected = await testConnection();
   res.json({ 
@@ -50,7 +43,7 @@ app.get('/health', async (req, res) => {
   });
 });
 
-// Test endpoint for orders
+// test endpoint for orders
 app.get('/api/test-orders', async (req, res) => {
   try {
     const [rows] = await pool.query('SELECT * FROM orders LIMIT 5');
@@ -61,7 +54,7 @@ app.get('/api/test-orders', async (req, res) => {
   }
 });
 
-// Test endpoint for count
+// test endpoint for count
 app.get('/api/test-count', async (req, res) => {
   try {
     const [rows] = await pool.query<RowDataPacket[]>('SELECT COUNT(*) as count FROM orders');
@@ -72,18 +65,18 @@ app.get('/api/test-count', async (req, res) => {
   }
 });
 
-// 404 handler - Express 5 compatible
+// 404 handler
 app.use((req, res) => {
   res.status(404).json({ error: 'Route not found' });
 });
 
-// Error handler
+// error handler
 app.use((err: any, req: express.Request, res: express.Response, next: express.NextFunction) => {
   console.error('Server error:', err.stack);
   res.status(500).json({ error: 'Something went wrong!' });
 });
 
-// Start server
+// start server
 app.listen(PORT, () => {
   console.log(`Backend server running on port ${PORT}`);
   console.log(`API available at http://localhost:${PORT}/api`);

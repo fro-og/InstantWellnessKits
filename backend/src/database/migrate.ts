@@ -4,7 +4,7 @@ async function migrate() {
   console.log('Running database migrations...');
   
   try {
-    // Create orders table
+    // create orders table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS orders (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,7 +20,7 @@ async function migrate() {
     `);
     console.log('Orders table created');
 
-    // Create tax_breakdown table
+    // create tax_breakdown table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS tax_breakdown (
         id INT AUTO_INCREMENT PRIMARY KEY,

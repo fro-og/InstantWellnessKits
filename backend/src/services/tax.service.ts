@@ -2,7 +2,7 @@ import { point } from '@turf/turf';
 import booleanPointInPolygon from '@turf/boolean-point-in-polygon';
 import countiesData from '../data/ny-counties.json';
 
-// Tax rates based on actual NY sales tax (state 4% + local)
+// tax rates based on actual NY sales tax (state 4% + local)
 interface TaxRates {
   state: number;
   county: number;
@@ -86,14 +86,10 @@ export const calculateTax = (lat: number, lon: number): {
   countyName: string | null;
 } => {
   try {
-    // Create a point from coordinates - point takes [lon, lat]
     const pt = point([lon, lat]);
     let foundCounty: string | null = null;
     
-    // Find which county contains this point
     for (const feature of countiesData.features) {
-      // Cast feature to any to bypass TypeScript type checking
-      // This is safe because we know the GeoJSON structure matches what turf expects
       if (booleanPointInPolygon(pt, feature as any)) {
         foundCounty = feature.properties.NAME;
         break;

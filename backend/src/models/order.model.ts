@@ -56,7 +56,7 @@ export const OrderModel = {
       
       const orderId = orderResult.insertId;
       
-      // Insert tax breakdown
+      // insert tax breakdown
       const breakdownEntries = [
         { type: 'state', rate: orderData.breakdown.state_rate },
         { type: 'county', rate: orderData.breakdown.county_rate },
@@ -93,7 +93,7 @@ export const OrderModel = {
     
     console.log('Filters:', { page, limit, offset, startDate, endDate, minSubtotal, maxSubtotal, search });
     
-    // Build WHERE clause and parameters
+    // build WHERE clause and parameters
     let whereConditions: string[] = [];
     const queryParams: any[] = [];
     
@@ -120,7 +120,6 @@ export const OrderModel = {
     
     const whereClause = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
     
-    // Get total count
     const countQuery = `SELECT COUNT(*) as total FROM orders ${whereClause}`;
     console.log('Count query:', countQuery);
     console.log('Count params:', queryParams);
@@ -128,7 +127,6 @@ export const OrderModel = {
     const [countResult] = await pool.query<CountResult[]>(countQuery, queryParams);
     const total = countResult[0].total;
     
-    // Get paginated orders
     const orderParams = [...queryParams, limit, offset];
     const orderQuery = `SELECT * FROM orders ${whereClause} ORDER BY timestamp DESC LIMIT ? OFFSET ?`;
     console.log('Order query:', orderQuery);
@@ -137,7 +135,6 @@ export const OrderModel = {
     const [orders] = await pool.query<OrderRow[]>(orderQuery, orderParams);
     console.log('Orders found:', orders.length);
     
-    // Get breakdowns for each order
     const ordersWithBreakdown: Order[] = await Promise.all(
       orders.map(async (order) => {
         const [breakdownRows] = await pool.query<TaxBreakdownRow[]>(

@@ -1,4 +1,3 @@
-// This should match your frontend types in src/types/order.ts
 export interface TaxBreakdown {
   state_rate: number;
   county_rate: number;

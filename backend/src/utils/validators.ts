@@ -1,4 +1,4 @@
-// Check if coordinates are within New York state bounds
+// check if coordinates are within New York state bounds
 export const isWithinNewYork = (lat: number, lon: number): boolean => {
   const NY_BOUNDS = {
     minLat: 40.4,

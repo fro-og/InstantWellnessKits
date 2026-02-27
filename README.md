@@ -226,4 +226,13 @@ PORT=3000 npm start
 # db setup
 npm run db:seed
 npm run db:migrate
+
+# check db content
+docker exec -it wellness-mysql mysql -u wellness_user -pwellness_pass wellness_kits -e "SELECT COUNT(*) FROM orders; SELECT * FROM orders LIMIT 5;"
+
+# backup db data
+docker exec wellness-mysql mysqldump -u wellness_user -pwellness_pass wellness_kits > backup_$(date +%Y%m%d).sql
+
+# restore db from backup
+cat backup_20250227.sql | docker exec -i wellness-mysql mysql -u wellness_user -pwellness_pass wellness_kits
 ```
