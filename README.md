@@ -1,115 +1,50 @@
 # BetterMe Drone Delivery
-## Business Requirements & Feature Proposals
-*Research & Business Analysis — Working Document*
+## Overview
+You and a few friends dropped out of university to build a drone delivery startup. After obtaining a license to deliver goods by drone anywhere in New York State, you launched Instant Wellness Kits — compact packages that help people "reset their day" in 20–30 minutes. The service took off fast.
+One problem: sales tax was never factored in. The app charged only the kit price, ignoring applicable taxes. The tax authority noticed. The company has 48 hours to fix it.
+Given the delivery coordinates (latitude & longitude), this service determines the correct composite sales tax for each order and stores the full breakdown — state, county, city, and special district rates.
 
----
+## Who Is This For?
+This service is currently a prototype — a single unified tool intended to validate the core tax calculation logic and give the delivery company full visibility into their orders.
+The primary audience at this stage is the delivery company itself. The admin panel lets the team track all orders, see the tax breakdown for each one, and manually create orders when something goes wrong on the customer side (app crashes, failed submissions, support tickets, etc.).
+In the future, the platform can naturally be split into two separate products:
 
-## 1. Sales Tax Calculation
+- Customer-facing app — simplified order placement and tracking for end users
+- Company dashboard — full order management, tax reporting, manual controls, and analytics for the operations team
 
-**Business Need**
+The core technological value of this prototype is automated tax calculation: given any delivery point in New York State, the system resolves the exact composite tax rate and applies it correctly. This alone is what the company needs most right now — a reliable, auditable record of every order's tax liability.
 
-> *(залиш тут порожнє місце — пропишу згодом)*
+## The Problem
+New York State has a complex, multi-jurisdictional sales tax system. The applicable composite rate depends on where the delivery is made, not where the business is located. For example, a delivery inside NYC is taxed at 8.875%, while deliveries in other counties or cities carry different rates.
+The mobile app collects GPS coordinates at checkout — that data is already available. This service uses those coordinates to resolve the correct tax jurisdiction and apply the right rate.
 
----
+## Features
+### Orders
 
-## 2. User Accounts & Order Tracking
+- Create an order manually by providing latitude, longitude, and subtotal (kit price before tax). The system instantly calculates and stores the full tax breakdown.
+- Import orders — upload a file with order data; the system processes each row, calculates taxes, and saves everything in bulk.
+- View all orders in a paginated, sortable table with calculated tax details.
 
-**Business Need**
+### Filtering
+#### Filter the orders list by:
 
-Сервіс наразі не надає користувачам жодної можливості відстежувати свої замовлення після оформлення. Це створює фрустрацію та збільшує навантаження на підтримку. Необхідно впровадити легку систему акаунтів.
+- Date range — from / to
+- Min / Max total amount
+- Location (jurisdiction / area)
 
-**Функціональні вимоги**
+### Tax Breakdown per Order
+#### Each order stores:
 
-- Реєстрація та авторизація через email або номер телефону (без зайвих полів — мінімально достатньо для сервісу такого типу).
-- Акаунт зберігає історію замовлень з прив'язкою до номера замовлення та статусу доставки.
-- Lifecycle статусів: `Прийнято` → `Дрон призначено` → `В дорозі` → `Доставлено` -- прописано в комірці самого замовлення, не займає лишнього місця, підсвічується кольором для інтуїтивного розуміння
-- Можливість переглянути деталі кожного замовлення: тип wellness kit, час, адреса, сума.
+- composite_tax_rate — e.g. 0.08875
+- tax_amount — calculated tax in dollars
+- total_amount — subtotal + tax
+- Breakdown: state_rate, county_rate, city_rate, special_rates
+- jurisdictions — which tax districts were applied
 
-> **Рекомендація:** Не варто перевантажувати акаунт зайвою функціональністю на старті. Достатньо email + список замовлень. Соціальний вхід (Google/Apple) значно підвищить конверсію реєстрації.
+### Authentication
 
----
-
-## 3. Гейміфікація через інтерактивну карту
-
-**Business Need**
-
-Очікування доставки — критична точка втрати користувача. Дослідження UX показують, що видиме очікування (коли людина бачить процес) суттєво знижує сприйняту тривалість і фрустрацію — ефект відомий як **"дзеркало в ліфті"**: встановлення дзеркал усунуло скарги на час очікування без зміни швидкості ліфта. Карта з рухом дрону є прямим аналогом цього рішення для нашого сервісу.
-
-**Функціональні вимоги**
-
-- Після оформлення замовлення користувач бачить інтерактивну карту з анімованим рухом дрону до точки доставки в реальному часі.
-- На карті відображається лише власне замовлення — чужі маршрути не видно для захисту приватності.
-- Кожне замовлення має публічний **Order ID**. Будь-хто може ввести чужий ID у поле пошуку й побачити статус доставки (без особистих даних).
-  - *Use case: користувач ділиться ID з другом, той відстежує доставку.*
-- В акаунті список усіх замовлень з ID — зручно копіювати та ділитися.
-- Карта показує розрахунковий час прибуття (ETA) з оновленням в реальному часі.
-
-> **Рекомендація:** Можна додати мікровзаємодії: звук дрону при наближенні, анімацію приземлення, коротке "вау-повідомлення" при доставці. Це формує емоційну прив'язаність до бренду.
-
----
-
-## 4. Доступність для людей з порушеннями зору
-
-**Business Need**
-
-Понад 2.2 мільярди людей у світі мають порушення зору різного ступеня. Ігнорування цієї аудиторії — це не лише втрачений ринок, а й юридичний ризик: у США сайти зобов'язані відповідати стандартам ADA. Відповідність стандартам доступності також покращує SEO та загальну якість коду.
-
-**Стандарти та ресурси**
-
-- Дотримуватись стандарту **WCAG 2.2 рівня AA** — міжнародний технічний стандарт доступності веб-контенту від W3C.
-- Офіційна документація: [W3C WAI — WCAG](https://www.w3.org/WAI/standards-guidelines/wcag/)
-- Практичний гайд для розробників: [Web Accessibility for the Visually Impaired](https://accessibilityassistant.com/blog/accessibility-insights/web-accessibility-for-visually-impaired/)
-
-**Ключові вимоги до реалізації**
-
-- Контрастність тексту до фону — мінімум 4.5:1 для звичайного тексту, 3:1 для великого.
-- Всі інтерактивні елементи (кнопки, форми, карта) мають бути доступні з клавіатури без миші.
-- Alt-тексти для всіх зображень та іконок — для зчитувачів екрану (screen readers).
-- Карта має мати текстову альтернативу: статус доставки, ETA, адреса — доступні без візуалізації.
-- Форми з чіткими `label`-елементами та повідомленнями про помилки для screen reader.
-
-> **Рекомендація:** Доступність найдешевше закласти на етапі проєктування, а не виправляти постфактум. Після релізу провести аудит через [Lighthouse](https://developer.chrome.com/docs/lighthouse/) (вбудований у Chrome DevTools) та [WAVE](https://wave.webaim.org/).
-
----
-
-## 5. Публічна статистика замовлень
-
-**Business Need**
-
-Публічна статистика виконує кілька функцій: підвищує довіру до бренду, формує FOMO, демонструє масштаб сервісу новим користувачам і дає медіа привід для згадок. Це низьковитратний механізм залучення, що не потребує рекламного бюджету.
-
-**Метрики для відображення**
-
-- Загальна кількість виконаних замовлень (лічильник з початку роботи сервісу).
-- Середня кількість замовлень на день (ковзне середнє за останні 30 днів).
-- Рекордний день — дата та кількість замовлень.
-- Популярні зони доставки — топ-3 райони або zip-коди (без особистих даних).
-- Середній час доставки — агреговано по всіх замовленнях.
-- Кількість активних дронів у реальному часі (якщо технічно доступно).
-
-**Формат подачі**
-
-- Окрема секція на головній сторінці або дашборд — *"By the numbers"*.
-- Анімовані лічильники при завантаженні сторінки для привернення уваги.
-- Оновлення статистики в реальному часі або раз на 24 години.
-
-> **Рекомендація:** Розглянути публікацію щотижневого *"State of Deliveries"* у форматі інфографіки для соціальних мереж — безкоштовний контент-маркетинг, що генерується автоматично з наявних даних.
-
----
-
-## Додаткові рекомендації
-
-**Рейтинг і відгуки**
-Після кожної доставки — короткий (1 питання) feedback-запит. Сукупний рейтинг підвищує конверсію нових користувачів.
-
-**Реферальна програма**
-Можливість поділитися Order ID органічно відкриває шлях до реферальної механіки: *"відстеж замовлення друга та отримай знижку на перший власний Kit"*.
-
-**Офлайн-режим PWA**
-Сторінка трекінгу має бути доступна як Progressive Web App з можливістю встановлення на домашній екран — для швидкого доступу під час очікування доставки.
-
-**Мультимовність**
-Нью-Йорк — багатомовне місто. Підтримка іспанської та китайської мов на старті відкриє значний додатковий сегмент ринку з мінімальними витратами.
+- Sign in with Google account via OAuth
+- Sign out
 
 ---
 ## Technical details
@@ -176,12 +111,18 @@ The system determines tax rates by:
 ```bash
 git clone https://github.com/yourusername/InstantWellnessKits.git
 cd InstantWellnessKits
-./setup.sh
+./setup.sh # for Linux
+./setup.bat # for Windows
 ```
 
 2. Start the app
 ```bash
-npm run dev
+npm run dev  # for Linux
+
+# -----------
+cd ..
+$env:PORT=3000; npm start # for Windows
+
 ```
 
 The application will be available at:
